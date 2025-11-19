@@ -17,6 +17,7 @@ timer = pygame.time.Clock()
 #game variables
 player_x = 170
 player_y = 400
+platforms = [[175, 480, 70, 10]]
 
 
 #screen
@@ -28,6 +29,9 @@ while running == True:
     timer.tick(fps)
     screen.fill(background)
     screen.blit(player, (player_x, player_y))
+
+    for i in range(len(platforms)):
+        block = pygame.draw.rect(screen, black, platforms[i])
 
 
     for event in pygame.event.get():
