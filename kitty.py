@@ -21,11 +21,13 @@ game_over = False
 #game variables
 player_x = 170
 player_y = 400
-platforms = [[175, 480, 70, 10], [50, 330, 70, 10], [1265, 370, 70, 10], [175, 260, 70, 10], [185, 150, 70, 10], [205, 150, 70, 10], [175, 40, 70, 10]]
+platforms = [[0, 480, 700, 10], [50, 330, 70, 10], [165, 370, 70, 10], [175, 260, 70, 10], [185, 150, 70, 10], [205, 150, 70, 10], [175, 40, 70, 10]]
 jump = False
 y_change = 0
 x_change = 0
 player_speed = 3
+animation_tracker = 0.0
+animation_increment = 0.1 #every time the game ticks, animation_tracker goes up by ONE increment
 
 
 #screen
@@ -35,7 +37,25 @@ pygame.display.set_caption('caliGO')
 #font
 font = pygame.font.SysFont(None, 30)
 
-
+#frames
+def get_frames(sheet, count):
+    frame_list = []
+    coords = [
+        (0, 0),
+        (640, 0),
+        (0, 640),
+        (640, 640),
+    ]
+    for i in range(count):
+        frame = pygame.Surface((640, 640), pygame.SRCALPHA)
+        source_rect = (coords[i][0], coords[i][1], 640, 640)
+        frame.blit(sheet, (0, 0), source_rect)
+        frame_list.append(frame)
+    return frame_list
+idle = pygame.image.load('idle.png').convert_alpha()
+idle_frames = get_frames(idle, 3)
+jump = pygame.image.load('jump.png').convert_alpha()
+jump_frames = get_frames(jump, 4)
 
 #check for player collisions with blocks
 def check_collisions(rect_list):
@@ -82,7 +102,13 @@ running = True
 while running == True:
     timer.tick(fps)
     screen.fill(background)
-    screen.blit(player, (player_x, player_y))
+
+    animation_tracker = animation_tracker + animation_increment 
+    if animation_tracker >= len(idle_frames): #reset animation trackver every time it goes over 3
+        animation_tracker = 0.0
+    current_image = idle_frames[int(animation_tracker)] #the "int" rounds down. so if animation_tracker is at 1.1, it'll use frame 1. if animation_tracker is at 0.5, it'll use frame 0. et cetera
+
+    # screen.blit(player, (player_x, player_y)) # I COMMENTED OUT THIS LINE because we're not using it anymore
     blocks = []
     score_text = font.render('score: ' + str(score), True, black, background)
     screen.blit(score_text, (320, 20))
@@ -108,26 +134,26 @@ while running == True:
             if event.key == pygame.K_LEFT:
                 x_change = 0
 
-                
-
-
     player_y = update_player(player_y)
     player_x += x_change 
     platforms = update_platforms(platforms, player_y, y_change)
     check_collisions(blocks)
 
+    # if x_change > 0:
+    #     player = pygame.transform.scale(
+    #       pygame.image.load('kitty.png'), 
+    #     (90, 70)
+    # )
+    # elif x_change < 0:
+    #     image = pygame.image.load('kitty.png')
+    #     image = pygame.transform.flip(image, True, False)
+    #     player = pygame.transform.scale(image, (90, 70))
     if x_change > 0:
-        player = pygame.transform.scale(
-          pygame.image.load('kitty.png'), 
-        (90, 70)
-    )
-    elif x_change < 0:
-        image = pygame.image.load('kitty.png')
-        image = pygame.transform.flip(image, True, False)
-        player = pygame.transform.scale(image, (90, 70))
-
-
-
+        player = pygame.transform.scale(current_image, (90, 70))
+    if x_change < 0:
+        current_image = pygame.transform.flip(current_image, True, False)
+        player = pygame.transform.scale(current_image, (90, 70))
+    screen.blit(player, (player_x, player_y))
 
     pygame.display.flip()
 pygame.quit()
