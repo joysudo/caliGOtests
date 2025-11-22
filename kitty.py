@@ -35,6 +35,20 @@ pygame.display.set_caption('caliGO')
 #font
 font = pygame.font.SysFont(None, 30)
 
+#update y coordinate of player 
+def update_player(y_pos):
+    global jump
+    global y_change
+    jump_height = 12
+    gravity = 0.5
+    if jump == True:
+        y_change = -jump_height # negative y_change is positive jump
+        jump = False
+    y_pos += y_change
+    y_change += gravity
+    return y_pos
+
+player_y = update_player(player_y)
 
 
 #check for player collisions with blocks
@@ -50,18 +64,8 @@ def check_collisions(rect_list):
     return False
 
 
-#update y coordinate of player 
-def update_player(y_pos):
-    global jump
-    global y_change
-    jump_height = 17
-    gravity = 1
-    if jump == True:
-        y_change = -jump_height # negative y_change is positive jump
-        jump = False
-    y_pos += y_change
-    y_change += gravity
-    return y_pos
+
+
 
 #movement of platforms
 def update_platforms(my_list, y_pos, change):
@@ -88,6 +92,7 @@ while running == True:
     screen.blit(score_text, (270, 50))
     high_score_text = font.render('high score: ' + str(score), True, black, background)
     screen.blit(high_score_text, (270, 20))
+    
 
     for i in range(len(platforms)):
         block = pygame.draw.rect(screen, black, platforms[i], 0, 3)
@@ -109,7 +114,9 @@ while running == True:
                 x_change = 0
             if event.key == pygame.K_LEFT:
                 x_change = 0
-
+    player_y = update_player(player_y)
+    check_collisions(blocks)
+    platforms = update_platforms(platforms, player_y, y_change)
                 
 
 
