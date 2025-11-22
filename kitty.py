@@ -1,3 +1,25 @@
+#  / \_/ \
+# ( o . o )
+# >   ^    <
+
+# WHAT DID I DO IN THESE COMMITS??? i'm glad u asked...
+# i added two flags (aka variables that can be true or false)
+# is_grounded, which is TRUE if the player is touching the ground
+# --> this tells us whether to trigger the idle animation or the jumping animation!
+# facing_left, which turns TRUE if the player presses the left key and FALSE if the player presses right
+# --> this tells us what direction to rotate the player!
+
+# here's an explanation of the animation logic.
+# - if we're GROUNDED, we do the idle animation!
+# - if we're NOT GROUNDED, we check. is our velocity super negative (aka we moving super fast)? is it kind of negative (we're moving slow)? is it kind of positive? is it super positive? 
+#   - whatever the velocity is, we assign the jump frame that matches the speed we're going.
+# - after the grounded check, we shrink the player down into a 90 by 70 block, and then check if we need to rotate it left (by checking if the facing_left flag is true). 
+#   - finally, we can screen.blit, which officially puts our kitty onto the screen.
+
+# the last commit was kinda doo doo poopy ngl. don't look at that one. 
+# i was really trying to avoid adding an is_grounded variable, so my method of checking which animation to use was superrr janky. 
+# it's way easier just to make a new variable that checks if the player is grounded at all times!
+
 import pygame
 import random
 
@@ -22,13 +44,14 @@ game_over = False
 player_x = 170
 player_y = 400
 platforms = [[0, 480, 700, 10], [50, 330, 70, 10], [165, 370, 70, 10], [175, 260, 70, 10], [185, 150, 70, 10], [205, 150, 70, 10], [175, 40, 70, 10]]
-jump = False
+jump = False # jump is an action trigger, which signals that a new jump has been initiated
 y_change = 0
 x_change = 0
 player_speed = 3
 animation_tracker = 0.0
 animation_increment = 0.1 #every time the game ticks, animation_tracker goes up by ONE increment
-
+is_grounded = False
+facing_left = False
 
 #screen
 screen = pygame.display.set_mode([width, height])
@@ -52,20 +75,23 @@ def get_frames(sheet, count):
         frame.blit(sheet, (0, 0), source_rect)
         frame_list.append(frame)
     return frame_list
-idle = pygame.image.load('idle.png').convert_alpha()
-idle_frames = get_frames(idle, 3)
-jump = pygame.image.load('jump.png').convert_alpha()
-jump_frames = get_frames(jump, 4)
+idle_sheet = pygame.image.load('idle.png').convert_alpha()
+idle_frames = get_frames(idle_sheet, 3)
+jump_sheet = pygame.image.load('jump.png').convert_alpha()
+jump_frames = get_frames(jump_sheet, 4)
 
 #check for player collisions with blocks
 def check_collisions(rect_list):
     global player_x
     global player_y
     global y_change
+    global is_grounded
+    is_grounded = False
     for i in range(len(rect_list)):
-        if rect_list[i].colliderect([player_x, player_y + 60, 90, 10]) and y_change > 0: #if it's colliding or already jumping, move player say it's colliding
+        if rect_list[i].colliderect([player_x, player_y + 60, 90, 10]) and y_change >= 0: #i changed this. also should count as grounded if y >= 0, not just if y > 0
             player_y = rect_list[i].top - 60
             y_change = 0
+            is_grounded = True
             return True            
     return False
 
@@ -78,9 +104,10 @@ def update_player(y_pos):
     gravity = 1
     if jump == True:
         y_change = -jump_height # negative y_change is positive jump
-        jump = False
+        jump = False # immediately gets set back to False after jump velocity is applied
     y_pos += y_change
-    y_change += gravity
+    if is_grounded == False:
+        y_change += gravity
     return y_pos
 
 #movement of platforms
@@ -102,11 +129,7 @@ running = True
 while running == True:
     timer.tick(fps)
     screen.fill(background)
-
-    animation_tracker = animation_tracker + animation_increment 
-    if animation_tracker >= len(idle_frames): #reset animation trackver every time it goes over 3
-        animation_tracker = 0.0
-    current_image = idle_frames[int(animation_tracker)] #the "int" rounds down. so if animation_tracker is at 1.1, it'll use frame 1. if animation_tracker is at 0.5, it'll use frame 0. et cetera
+    # got rid of the animation logic here, put it at the bottom in the  if blocks
 
     blocks = []
     score_text = font.render('score: ' + str(score), True, black, background)
@@ -124,8 +147,10 @@ while running == True:
                 jump = True
             if event.key == pygame.K_RIGHT:
                 x_change = player_speed
+                facing_left = False
             if event.key == pygame.K_LEFT:
                 x_change = -player_speed
+                facing_left = True
 
         elif event.type == pygame.KEYUP:
             if event.key == pygame.K_RIGHT:
@@ -138,11 +163,26 @@ while running == True:
     platforms = update_platforms(platforms, player_y, y_change)
     check_collisions(blocks)
 
-    if x_change > 0:
-        player = pygame.transform.scale(current_image, (90, 70))
-    if x_change < 0:
-        current_image = pygame.transform.flip(current_image, True, False)
-        player = pygame.transform.scale(current_image, (90, 70))
+    if is_grounded == True: # if we aren't jumping :D
+        animation_tracker = animation_tracker + animation_increment 
+        if animation_tracker >= len(idle_frames): #reset animation trackver every time it goes over 3
+            animation_tracker = 0.0
+        player = idle_frames[int(animation_tracker)] #the "int" rounds down. so if animation_tracker is at 1.1, it'll use frame 1. if animation_tracker is at 0.5, it'll use frame 0. et cetera
+    elif is_grounded == False: # we're not grounded so WE'RE JUMPING BABYYY 
+        # remember, frames "begin indexing" at 0, so the first one is labelled 0, second one is labelled 1, etc...
+        if y_change < -6: # if we're moving UPWARDS FAST (super negative velocity)
+            player = jump_frames[0] 
+        if y_change > -6 and y_change < 0:
+            player = jump_frames[1]
+        if y_change > 0 and y_change < 6: 
+            player = jump_frames[2]
+        if y_change > 6: # if we're moving DOWNWARDS FAST (super positive velocity)
+            player = jump_frames[3]
+
+    player = pygame.transform.scale(player, (90, 70))
+    if facing_left:
+        player = pygame.transform.flip(player, True, False)
+
     screen.blit(player, (player_x, player_y))
 
     pygame.display.flip()
