@@ -26,7 +26,7 @@ jump = False
 y_change = 0
 x_change = 0
 player_speed = 3
-
+high_score = 0
 
 #screen
 screen = pygame.display.set_mode([width, height])
@@ -85,7 +85,9 @@ while running == True:
     screen.blit(player, (player_x, player_y))
     blocks = []
     score_text = font.render('score: ' + str(score), True, black, background)
-    screen.blit(score_text, (320, 20))
+    screen.blit(score_text, (270, 50))
+    high_score_text = font.render('high score: ' + str(score), True, black, background)
+    screen.blit(high_score_text, (270, 20))
 
     for i in range(len(platforms)):
         block = pygame.draw.rect(screen, black, platforms[i], 0, 3)
@@ -116,6 +118,12 @@ while running == True:
     platforms = update_platforms(platforms, player_y, y_change)
     check_collisions(blocks)
 
+    if player_y < 488:
+        platforms = update_platforms(platforms, player_y, y_change)
+    else:
+        game_over = True
+        y_change = 0
+
     if x_change > 0:
         player = pygame.transform.scale(
           pygame.image.load('kitty.png'), 
@@ -126,8 +134,11 @@ while running == True:
         image = pygame.transform.flip(image, True, False)
         player = pygame.transform.scale(image, (90, 70))
 
+    if score > high_score:
+        high_score = score
 
-
+    if game_over == True:
+        pygame.quit()
 
     pygame.display.flip()
 pygame.quit()
