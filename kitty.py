@@ -108,7 +108,6 @@ while running == True:
         animation_tracker = 0.0
     current_image = idle_frames[int(animation_tracker)] #the "int" rounds down. so if animation_tracker is at 1.1, it'll use frame 1. if animation_tracker is at 0.5, it'll use frame 0. et cetera
 
-    # screen.blit(player, (player_x, player_y)) # I COMMENTED OUT THIS LINE because we're not using it anymore
     blocks = []
     score_text = font.render('score: ' + str(score), True, black, background)
     screen.blit(score_text, (320, 20))
@@ -139,15 +138,6 @@ while running == True:
     platforms = update_platforms(platforms, player_y, y_change)
     check_collisions(blocks)
 
-    # if x_change > 0:
-    #     player = pygame.transform.scale(
-    #       pygame.image.load('kitty.png'), 
-    #     (90, 70)
-    # )
-    # elif x_change < 0:
-    #     image = pygame.image.load('kitty.png')
-    #     image = pygame.transform.flip(image, True, False)
-    #     player = pygame.transform.scale(image, (90, 70))
     if x_change > 0:
         player = pygame.transform.scale(current_image, (90, 70))
     if x_change < 0:
