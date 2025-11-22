@@ -8,7 +8,7 @@ pygame.init()
 white = (255, 255, 255)
 black = (0, 0, 0)
 gray = (128, 128, 128)
-width = 400
+width = 600
 height = 500
 background = white
 player = pygame.transform.scale(pygame.image.load ('kitty.png'), (90, 70))
@@ -16,7 +16,6 @@ fps = 60
 timer = pygame.time.Clock()
 score = 0
 game_over = False
-
 
 #game variables
 player_x = 170
@@ -28,6 +27,41 @@ y_change = 0
 x_change = 0
 player_speed = 3
 high_score = 0
+
+#restart
+def restart():
+    global player_x, player_y, y_change, x_change, score, game_over, platforms, jump
+    player_x = 170
+    player_y = 400
+    y_change = 0
+    x_change = 0
+    score = 0
+    game_over = False
+
+    #reset platforms
+    platforms = [
+        [175, 480, 90, 10],
+        [50, 330, 90, 10],
+        [125, 370, 90, 10],
+        [175, 260, 90, 10],
+        [185, 150, 90, 10],
+        [205, 150, 90, 10],
+        [175, 40, 90, 10]
+    ]
+
+    jump = False
+
+    #show start screen again
+    show_start_screen()
+
+    waiting = True
+    while waiting:
+        for e in pygame.event.get():
+            if e.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+            if e.type == pygame.KEYDOWN and e.key == pygame.K_RETURN:
+                waiting = False 
 
 #screen
 screen = pygame.display.set_mode([width, height])
@@ -79,6 +113,28 @@ def update_platforms(my_list, y_pos, change):
             score += 1
     return my_list
 
+#start screen
+def show_start_screen():
+    screen.fill(white)
+    title = font.render("caliGO", True, black)
+    start_text = font.render("the kitty has probably forgiven you by now, press enter", True, black)
+
+    screen.blit(title, (width//2 - title.get_width()//2, 150))
+    screen.blit(start_text, (width//2 - start_text.get_width()//2, 250))
+
+    pygame.display.flip()
+
+#game over screen
+def show_game_over_screen(score, high_score):
+    screen.fill(white)
+    over = font.render("game over, the kitty fell!!", True, black)
+    score_text = font.render(f"Score: {score}", True, black)
+    restart_text = font.render("press space to ask the kitty for forgiveness", True, black)
+
+    screen.blit(over, (width//2 - over.get_width()//2, 150))
+    screen.blit(score_text, (width//2 - score_text.get_width()//2, 200))
+    screen.blit(restart_text, (width//2 - restart_text.get_width()//2, 260))
+
 
 running = True
 while running == True:
@@ -106,12 +162,26 @@ while running == True:
                 x_change = player_speed
             if event.key == pygame.K_LEFT:
                 x_change = -player_speed
+            if event.key == pygame.K_SPACE:
+               show_start_screen()
+
+               waiting = True
+               while waiting:
+                  for e in pygame.event.get():
+                     if e.type == pygame.QUIT:
+                            pygame.quit()
+                            quit()
+                     if e.type == pygame.KEYDOWN and e.key == pygame.K_SPACE:
+                            waiting = False  
+            if event.key == pygame.K_RETURN:
+                restart()
 
         elif event.type == pygame.KEYUP:
             if event.key == pygame.K_RIGHT:
                 x_change = 0
             if event.key == pygame.K_LEFT:
                 x_change = 0
+
     player_y = update_player(player_y)
     check_collisions(blocks)
     platforms = update_platforms(platforms, player_y, y_change)
@@ -143,7 +213,7 @@ while running == True:
         high_score = score
 
     if game_over == True:
-        pygame.quit()
+        show_game_over_screen(score, high_score)
 
     pygame.display.flip()
 pygame.quit()
