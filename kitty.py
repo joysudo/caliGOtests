@@ -116,8 +116,8 @@ font = pygame.font.SysFont(None, 30)
 def update_player(y_pos):
     global jump
     global y_change
-    jump_height = 12
-    gravity = 0.5
+    jump_height = 15
+    gravity = 1
     if jump == True:
         y_change = -jump_height # negative y_change is positive jump
         jump = False
@@ -251,9 +251,7 @@ while running == True:
 
     player_y = update_player(player_y)
     check_collisions(blocks)
-    platforms = update_platforms(platforms, player_y, y_change)
     player_x += x_change 
-    platforms = update_platforms(platforms, player_y, y_change)
     check_collisions(blocks)
 
     if player_y < 488:
