@@ -11,11 +11,16 @@ gray = (128, 128, 128)
 width = 600
 height = 500
 background = white
+#screen
+screen = pygame.display.set_mode([width, height])
+pygame.display.set_caption('caliGO')
+#more constants
 player = pygame.transform.scale(pygame.image.load ('kitty.png'), (90, 70))
 fps = 60
 timer = pygame.time.Clock()
 score = 0
 game_over = False
+
 
 #game variables
 player_x = 170
@@ -28,6 +33,35 @@ x_change = 0
 player_speed = 3
 high_score = 0
 
+#animation variables
+animation_tracker = 0.0
+animation_increment = 0.1
+is_grounded = False
+facing_left = False
+
+#frames
+def get_frames(sheet, count):
+    frame_list = []
+    coords = [
+        (0, 0),
+        (640, 0),
+        (0, 640),
+        (640, 640),
+    ]
+    for i in range(count):
+        frame = pygame.Surface((640, 640), pygame.SRCALPHA)
+        source_rect = (coords[i][0], coords[i][1], 640, 640)
+        frame.blit(sheet, (0, 0), source_rect)
+        frame_list.append(frame)
+    return frame_list
+
+idle_sheet = pygame.image.load('idle.png').convert_alpha()
+idle_frames = get_frames(idle_sheet, 3)
+
+jump_sheet = pygame.image.load('jump.png').convert_alpha()
+jump_frames = get_frames(jump_sheet, 4)
+
+
 #restart
 def restart():
     global player_x, player_y, y_change, x_change, score, game_over, platforms, jump
@@ -38,7 +72,6 @@ def restart():
     score = 0
     game_over = False
 
-    #reset platforms
     platforms = [
         [175, 480, 90, 10],
         [50, 330, 90, 10],
@@ -50,6 +83,17 @@ def restart():
     ]
 
     jump = False
+
+
+    waiting = True
+    while waiting:
+        for e in pygame.event.get():
+            if e.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+            if e.type == pygame.KEYDOWN and e.key == pygame.K_RETURN:
+                waiting = False
+
 
     #show start screen again
     show_start_screen()
@@ -63,9 +107,7 @@ def restart():
             if e.type == pygame.KEYDOWN and e.key == pygame.K_RETURN:
                 waiting = False 
 
-#screen
-screen = pygame.display.set_mode([width, height])
-pygame.display.set_caption('caliGO')
+
 
 #font
 font = pygame.font.SysFont(None, 30)
@@ -88,15 +130,16 @@ player_y = update_player(player_y)
 
 #check for player collisions with blocks
 def check_collisions(rect_list):
-    global player_x
-    global player_y
-    global y_change
+    global player_x, player_y, y_change, is_grounded
+    is_grounded = False
     for i in range(len(rect_list)):
-        if rect_list[i].colliderect([player_x, player_y + 60, 90, 10]) and y_change > 0: #if it's colliding or already jumping, move player say it's colliding
+        if rect_list[i].colliderect([player_x, player_y + 60, 90, 10]) and y_change >= 0:
             player_y = rect_list[i].top - 60
             y_change = 0
+            is_grounded = True
             return True            
     return False
+
 
 
 #movement of platforms
@@ -140,6 +183,27 @@ running = True
 while running == True:
     timer.tick(fps)
     screen.fill(background)
+    #animation system
+    if is_grounded:
+        animation_tracker += animation_increment
+        if animation_tracker >= len(idle_frames):
+            animation_tracker = 0.0
+        player = idle_frames[int(animation_tracker)]
+    else:
+        if y_change < -6:
+            player = jump_frames[0]
+        elif -6 <= y_change < 0:
+            player = jump_frames[1]
+        elif 0 <= y_change < 6:
+            player = jump_frames[2]
+        else:
+            player = jump_frames[3]
+
+#scale + flip
+    player = pygame.transform.scale(player, (90, 70))
+    if facing_left:
+        player = pygame.transform.flip(player, True, False)
+
     screen.blit(player, (player_x, player_y))
     blocks = []
     score_text = font.render('score: ' + str(score), True, black, background)
@@ -160,8 +224,10 @@ while running == True:
                 jump = True
             if event.key == pygame.K_RIGHT:
                 x_change = player_speed
+                facing_left = False
             if event.key == pygame.K_LEFT:
                 x_change = -player_speed
+                facing_left = True
             if event.key == pygame.K_SPACE:
                show_start_screen()
 
@@ -175,6 +241,7 @@ while running == True:
                             waiting = False  
             if event.key == pygame.K_RETURN:
                 restart()
+                continue
 
         elif event.type == pygame.KEYUP:
             if event.key == pygame.K_RIGHT:
@@ -185,10 +252,6 @@ while running == True:
     player_y = update_player(player_y)
     check_collisions(blocks)
     platforms = update_platforms(platforms, player_y, y_change)
-                
-
-
-    player_y = update_player(player_y)
     player_x += x_change 
     platforms = update_platforms(platforms, player_y, y_change)
     check_collisions(blocks)
@@ -198,17 +261,6 @@ while running == True:
     else:
         game_over = True
         y_change = 0
-
-    if x_change > 0:
-        player = pygame.transform.scale(
-          pygame.image.load('kitty.png'), 
-        (90, 70)
-    )
-    elif x_change < 0:
-        image = pygame.image.load('kitty.png')
-        image = pygame.transform.flip(image, True, False)
-        player = pygame.transform.scale(image, (90, 70))
-
     if score > high_score:
         high_score = score
 
