@@ -21,6 +21,12 @@ timer = pygame.time.Clock()
 score = 0
 game_over = False
 
+#platforms
+platform_img = pygame.image.load('platform_1.png').convert_alpha()
+platform_width = 100  #match platform size
+platform_height = 30
+platform_img = pygame.transform.scale(platform_img, (platform_width, platform_height))
+
 
 #game variables
 player_x = 170
@@ -132,14 +138,15 @@ player_y = update_player(player_y)
 def check_collisions(rect_list):
     global player_x, player_y, y_change, is_grounded
     is_grounded = False
-    for i in range(len(rect_list)):
-        if rect_list[i].colliderect([player_x, player_y + 60, 90, 10]) and y_change >= 0:
-            player_y = rect_list[i].top - 60
+    player_rect = pygame.Rect(player_x, player_y + 60, 90, 10)  #bottom of player
+
+    for block in rect_list:
+        if block.colliderect(player_rect) and y_change >= 0:
+            player_y = block.top - 60
             y_change = 0
             is_grounded = True
-            return True            
+            return True
     return False
-
 
 
 #movement of platforms
@@ -221,14 +228,16 @@ while running == True:
     screen.blit(player, (player_x, player_y))
     blocks = []
     score_text = font.render('score: ' + str(score), True, black, background)
-    screen.blit(score_text, (270, 50))
+    screen.blit(score_text, (400, 50))
     high_score_text = font.render('high score: ' + str(score), True, black, background)
-    screen.blit(high_score_text, (270, 20))
+    screen.blit(high_score_text, (400, 20))
     
 
-    for i in range(len(platforms)):
-        block = pygame.draw.rect(screen, black, platforms[i], 0, 3)
-        blocks.append(block)
+    blocks = []
+    for p in platforms:
+        screen.blit(platform_img, (p[0], p[1]))
+        blocks.append(pygame.Rect(p[0], p[1], platform_width, platform_height))
+
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
