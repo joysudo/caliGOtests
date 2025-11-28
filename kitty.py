@@ -8,6 +8,8 @@ pygame.init()
 white = (255, 255, 255)
 black = (0, 0, 0)
 gray = (128, 128, 128)
+red = (255, 0, 0)
+blue = (0, 0, 255)
 width = 600
 height = 500
 background = white
@@ -22,9 +24,9 @@ score = 0
 game_over = False
 
 #platforms
-platform_img = pygame.image.load('platform_1.png').convert_alpha()
-platform_width = 100  #match platform size
-platform_height = 30
+platform_img = pygame.image.load('new_platform.png').convert_alpha()
+platform_width = 75  #match platform size
+platform_height = 45
 platform_img = pygame.transform.scale(platform_img, (platform_width, platform_height))
 
 #meow
@@ -148,11 +150,14 @@ player_y = update_player(player_y)
 def check_collisions(rect_list):
     global player_x, player_y, y_change, is_grounded
     is_grounded = False
-    player_rect = pygame.Rect(player_x, player_y + 60, 90, 10)  #bottom of player
+    # formerly:     player_rect = pygame.Rect(player_x, player_y + 60, 90, 10)  #bottom of player
+    player_rect = pygame.Rect(player_x + 20, player_y + 50, 50, 20)  #bottom of player
+    # y-height: starts at 60th pixel and ends at  70th pixel (total cat height is 70)
+    # pygame.draw.rect(screen, red, player_rect, 1)
 
     for block in rect_list:
         if block.colliderect(player_rect) and y_change >= 0:
-            player_y = block.top - 60
+            player_y = block.top - 50
             y_change = 0
             is_grounded = True
             return True
@@ -234,7 +239,6 @@ while running == True:
     player = pygame.transform.scale(player, (90, 70))
     if facing_left:
         player = pygame.transform.flip(player, True, False)
-
     screen.blit(player, (player_x, player_y))
     blocks = []
     score_text = font.render('score: ' + str(score), True, black, background)
@@ -245,6 +249,7 @@ while running == True:
 
     blocks = []
     for p in platforms:
+        # pygame.draw.rect(screen, blue, (p[0], p[1], platform_width, platform_height))
         screen.blit(platform_img, (p[0], p[1]))
         blocks.append(pygame.Rect(p[0], p[1], platform_width, platform_height))
 
