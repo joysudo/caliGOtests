@@ -1,3 +1,25 @@
+#  / \_/ \
+# ( o . o )
+# >   ^    <
+
+# WHAT DID I DO IN THESE COMMITS??? i'm glad u asked...
+# i added two flags (aka variables that can be true or false)
+# is_grounded, which is TRUE if the player is touching the ground
+# --> this tells us whether to trigger the idle animation or the jumping animation!
+# facing_left, which turns TRUE if the player presses the left key and FALSE if the player presses right
+# --> this tells us what direction to rotate the player!
+
+# here's an explanation of the animation logic.
+# - if we're GROUNDED, we do the idle animation!
+# - if we're NOT GROUNDED, we check. is our velocity super negative (aka we moving super fast)? is it kind of negative (we're moving slow)? is it kind of positive? is it super positive? 
+#   - whatever the velocity is, we assign the jump frame that matches the speed we're going.
+# - after the grounded check, we shrink the player down into a 90 by 70 block, and then check if we need to rotate it left (by checking if the facing_left flag is true). 
+#   - finally, we can screen.blit, which officially puts our kitty onto the screen.
+
+# the last commit was kinda doo doo poopy ngl. don't look at that one. 
+# i was really trying to avoid adding an is_grounded variable, so my method of checking which animation to use was superrr janky. 
+# it's way easier just to make a new variable that checks if the player is grounded at all times!
+
 import pygame
 import random
 
@@ -43,8 +65,7 @@ platforms = [
     [185, 150, 90, 10], 
     [205, 150, 90, 10], 
     [175, 40, 90, 10]
-    ] #hated having to scroll to see all of them lol
-
+    ]
 jump = False
 y_change = 0
 x_change = 0
@@ -123,13 +144,11 @@ def restart():
                 pygame.quit()
                 quit()
             if e.type == pygame.KEYDOWN and e.key == pygame.K_RETURN:
-                waiting = False 
-
+                waiting = False
 
 
 #font
 font = pygame.font.SysFont(None, 30)
-
 #update y coordinate of player 
 def update_player(y_pos):
     global jump
@@ -137,10 +156,11 @@ def update_player(y_pos):
     jump_height = 15
     gravity = 1
     if jump == True:
-        y_change = -jump_height #negative y_change is positive jump
+        y_change = -jump_height
         jump = False
     y_pos += y_change
-    y_change += gravity
+    if is_grounded == False:
+        y_change += gravity
     return y_pos
 
 player_y = update_player(player_y)
@@ -219,27 +239,6 @@ running = True
 while running == True:
     timer.tick(fps)
     screen.fill(background)
-    #animation system
-    if is_grounded:
-        animation_tracker += animation_increment
-        if animation_tracker >= len(idle_frames):
-            animation_tracker = 0.0
-        player = idle_frames[int(animation_tracker)]
-    else:
-        if y_change < -6:
-            player = jump_frames[0]
-        elif -6 <= y_change < 0:
-            player = jump_frames[1]
-        elif 0 <= y_change < 6:
-            player = jump_frames[2]
-        else:
-            player = jump_frames[3]
-
-#scale + flip
-    player = pygame.transform.scale(player, (90, 70))
-    if facing_left:
-        player = pygame.transform.flip(player, True, False)
-    screen.blit(player, (player_x, player_y))
     blocks = []
     score_text = font.render('score: ' + str(score), True, black, background)
     screen.blit(score_text, (400, 50))
@@ -267,20 +266,6 @@ while running == True:
             if event.key == pygame.K_LEFT:
                 x_change = -player_speed
                 facing_left = True
-            if event.key == pygame.K_SPACE:
-               show_start_screen()
-
-               waiting = True
-               while waiting:
-                  for e in pygame.event.get():
-                     if e.type == pygame.QUIT:
-                            pygame.quit()
-                            quit()
-                     if e.type == pygame.KEYDOWN and e.key == pygame.K_SPACE:
-                            waiting = False  
-            if event.key == pygame.K_RETURN:
-                restart()
-                continue
 
         elif event.type == pygame.KEYUP:
             if event.key == pygame.K_RIGHT:
@@ -300,6 +285,27 @@ while running == True:
         y_change = 0
     if score > high_score:
         high_score = score
+
+    if is_grounded == True:
+        animation_tracker = animation_tracker + animation_increment 
+        if animation_tracker >= len(idle_frames):
+            animation_tracker = 0.0
+        player = idle_frames[int(animation_tracker)]
+    elif is_grounded == False:
+        if y_change < -6:
+            player = jump_frames[0] 
+        if y_change > -6 and y_change < 0:
+            player = jump_frames[1]
+        if y_change > 0 and y_change < 6: 
+            player = jump_frames[2]
+        if y_change > 6:
+            player = jump_frames[3]
+
+    player = pygame.transform.scale(player, (90, 70))
+    if facing_left:
+        player = pygame.transform.flip(player, True, False)
+
+    screen.blit(player, (player_x, player_y))
 
     if game_over == True:
         show_game_over_screen(score, high_score)
