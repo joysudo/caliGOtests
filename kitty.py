@@ -323,24 +323,7 @@ while running == True:
     screen.blit(score_text, (400, 50))
     high_score_text = font.render('high score: ' + str(score), True, black, background)
     screen.blit(high_score_text, (400, 20))
-    
-    bird_x += bird_speed
-    bird_rect.x = bird_x
-    if bird_x <= 0 or bird_x + bird_width >= width:
-        bird_speed *= -1
 
-    current_time = pygame.time.get_ticks()
-    if current_time - last_bird_swap >= bird_swap_interval:
-        if bird_img == bird_img1:
-            bird_img = bird_img2
-        else:
-            bird_img = bird_img1
-        last_bird_swap = current_time
-
-    if bird_speed < 0:
-        screen.blit(pygame.transform.flip(bird_img, True, False), (bird_x, bird_y))
-    else:
-        screen.blit(bird_img, (bird_x, bird_y))
 
 
     blocks = []
@@ -385,6 +368,24 @@ while running == True:
     player_rect = pygame.Rect(player_x, player_y, 90, 70)
     if player_rect.colliderect(bird_rect):
         game_over = True
+
+    bird_x += bird_speed
+    bird_rect.x = bird_x
+    if bird_x <= 0 or bird_x + bird_width >= width:
+        bird_speed *= -1
+
+    current_time = pygame.time.get_ticks()
+    if current_time - last_bird_swap >= bird_swap_interval:
+        if bird_img == bird_img1:
+            bird_img = bird_img2
+        else:
+            bird_img = bird_img1
+        last_bird_swap = current_time
+
+    if bird_speed < 0:
+        screen.blit(pygame.transform.flip(bird_img, True, False), (bird_x, bird_y))
+    else:
+        screen.blit(bird_img, (bird_x, bird_y))
 
 
     player_y = update_player(player_y)
