@@ -46,10 +46,18 @@ backgrounds = [
     pygame.transform.scale(pygame.image.load("background18.png"), (width, height)),
 ] #woa so many 
 current_background = 0
-background_change_interval = 1000
 last_background_change = pygame.time.get_ticks()
 
-
+#birb
+bird_x = 100
+bird_y = 100
+bird_height = 72
+bird_width = 112
+bird_speed = 1
+bird_rect = pygame.Rect(bird_x, bird_y, bird_width, bird_height)
+bird_img1 = pygame.transform.scale(pygame.image.load("bird.png"), (bird_width, bird_height))
+bird_img2 = pygame.transform.scale(pygame.image.load("bird2.png"), (bird_width, bird_height))
+bird_img = bird_img1
 
 
 
@@ -73,7 +81,7 @@ platforms = [
     [185, 200, 90, 10], 
     [205, 150, 90, 10], 
     [175, 40, 90, 10]
-    ] #hated having to scroll to see all of them lol
+    ] 
 
 jump = False
 y_change = 0
@@ -248,6 +256,43 @@ running = True
 while running == True:
     timer.tick(fps)
     screen.blit(backgrounds[current_background], (0, 0))
+    if score > 10 and score < 20:
+        current_background = 1
+    if score > 20 and score < 30:
+        current_background = 2
+    if score > 30 and score < 40:
+        current_background = 3
+    if score > 50 and score < 60:
+        current_background = 4
+    if score > 60 and score < 70:
+        current_background = 5
+    if score > 70 and score < 80:
+        current_background = 6
+    if score > 80 and score < 90:
+        current_background = 7
+    if score > 90 and score < 100:
+        current_background = 8
+    if score > 100 and score < 110:
+        current_background = 9
+    if score > 110 and score < 120:
+        current_background = 10
+    if score > 120 and score < 130:
+        current_background = 11
+    if score > 130 and score < 140:
+        current_background = 12
+    if score > 140 and score < 150:
+        current_background = 13
+    if score > 150 and score < 160:
+        current_background = 14
+    if score > 160 and score < 170:
+        current_background = 15
+    if score > 170 and score < 180:
+        current_background = 16
+    if score > 180 and score < 190:
+        current_background = 17
+    if score > 190 and score < 200:
+        current_background = 18
+
     #animation system
     if is_grounded:
         animation_tracker += animation_increment
@@ -276,6 +321,11 @@ while running == True:
     high_score_text = font.render('high score: ' + str(score), True, black, background)
     screen.blit(high_score_text, (400, 20))
     
+    bird_x += bird_speed
+    bird_rect.x = bird_x
+    if bird_x <= 0 or bird_x + bird_width >= width:
+        bird_speed *= -1
+    screen.blit(bird_img, (bird_x, bird_y))
 
     blocks = []
     for p in platforms:
@@ -316,14 +366,16 @@ while running == True:
             if event.key == pygame.K_LEFT:
                 x_change = 0
 
+    player_rect = pygame.Rect(player_x, player_y, 90, 70)
+    if player_rect.colliderect(bird_rect):
+        game_over = True
+
+
     player_y = update_player(player_y)
     check_collisions(blocks)
     player_x += x_change 
     check_collisions(blocks)
     current_time = pygame.time.get_ticks()
-    if current_time - last_background_change >= background_change_interval:
-        current_background = (current_background + 1) % len(backgrounds)
-        last_background_change = current_time
 
     if player_y < 488:
         platforms = update_platforms(platforms, player_y, y_change)
