@@ -182,36 +182,27 @@ jump_frames = get_frames(jump_sheet, 4)
 
 #restart
 def restart():
-    global player_x, player_y, y_change, x_change, score, game_over, platforms, jump
+    global player_x, player_y, y_change, x_change, score, game_over, platforms, jump, celebrating, current_background
+
     player_x = 170
     player_y = 400
     y_change = 0
     x_change = 0
     score = 0
     game_over = False
+    jump = False
+    celebrating = False
+    current_background = 0
 
     platforms = [
         [175, 480, 90, 10],
-        [50, 330, 90, 10],
-        [125, 370, 90, 10],
-        [175, 260, 90, 10],
-        [185, 150, 90, 10],
-        [205, 150, 90, 10],
-        [175, 40, 90, 10]
+        [60, 400, 90, 10],
+        [220, 330, 90, 10],
+        [100, 260, 90, 10],
+        [190, 190, 90, 10],
+        [40, 120, 90, 10],
+        [230, 50, 90, 10]
     ]
-
-    jump = False
-
-
-    waiting = True
-    while waiting:
-        for e in pygame.event.get():
-            if e.type == pygame.QUIT:
-                pygame.quit()
-                quit()
-            if e.type == pygame.KEYDOWN and e.key == pygame.K_RETURN:
-                waiting = False
-
 
     #show start screen again
     show_start_screen()
@@ -303,7 +294,7 @@ def show_start_screen():
 #game over screen
 def show_game_over_screen(score, high_score):
     screen.fill(white)
-    over = font.render("game over, the kitty fell!!", True, black)
+    over = font.render("game over, the kitty fell!! (press enter)", True, black)
     score_text = font.render(f"Score: {score}", True, black)
 
 
@@ -388,7 +379,7 @@ while running == True:
     blocks = []
     score_text = font.render('score: ' + str(score), True, black, background)
     screen.blit(score_text, (400, 50))
-    high_score_text = font.render('high score: ' + str(score), True, black, background)
+    high_score_text = font.render('high score: ' + str(high_score), True, black, background)
     screen.blit(high_score_text, (400, 20))
 
 
@@ -422,9 +413,9 @@ while running == True:
                             quit()
                      if e.type == pygame.KEYDOWN and e.key == pygame.K_SPACE:
                             waiting = False  
-            if event.key == pygame.K_RETURN:
+            if event.key == pygame.K_RETURN and game_over:
                 restart()
-                continue
+                
 
         elif event.type == pygame.KEYUP:
             if event.key == pygame.K_RIGHT:
