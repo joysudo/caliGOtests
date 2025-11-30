@@ -1,25 +1,3 @@
-#  / \_/ \
-# ( o . o )
-# >   ^    <
-
-# WHAT DID I DO IN THESE COMMITS??? i'm glad u asked...
-# i added two flags (aka variables that can be true or false)
-# is_grounded, which is TRUE if the player is touching the ground
-# --> this tells us whether to trigger the idle animation or the jumping animation!
-# facing_left, which turns TRUE if the player presses the left key and FALSE if the player presses right
-# --> this tells us what direction to rotate the player!
-
-# here's an explanation of the animation logic.
-# - if we're GROUNDED, we do the idle animation!
-# - if we're NOT GROUNDED, we check. is our velocity super negative (aka we moving super fast)? is it kind of negative (we're moving slow)? is it kind of positive? is it super positive? 
-#   - whatever the velocity is, we assign the jump frame that matches the speed we're going.
-# - after the grounded check, we shrink the player down into a 90 by 70 block, and then check if we need to rotate it left (by checking if the facing_left flag is true). 
-#   - finally, we can screen.blit, which officially puts our kitty onto the screen.
-
-# the last commit was kinda doo doo poopy ngl. don't look at that one. 
-# i was really trying to avoid adding an is_grounded variable, so my method of checking which animation to use was superrr janky. 
-# it's way easier just to make a new variable that checks if the player is grounded at all times!
-
 import pygame
 import random
 
