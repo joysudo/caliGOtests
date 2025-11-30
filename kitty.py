@@ -55,7 +55,7 @@ last_background_change = pygame.time.get_ticks()
 
 #birb
 bird_x = 100
-bird_y = 150
+bird_y = 200
 bird_height = 36
 bird_width = 56
 bird_speed = 1
@@ -71,7 +71,7 @@ bird_swap_interval = 1000
 
 #platforms
 platform_img = pygame.image.load('platform_1.png').convert_alpha()
-platform_width = 75  
+platform_width = 100  
 platform_height = 45
 platform_img = pygame.transform.scale(platform_img, (platform_width, platform_height))
 
@@ -82,14 +82,14 @@ jump_sound = pygame.mixer.Sound("kittymeow.mp3")
 player_x = 170
 player_y = 400
 platforms = [
-    [175, 480, 90, 10], 
-    [50, 330, 90, 10], 
-    [125, 370, 90, 10], 
-    [175, 260, 90, 10], 
-    [185, 200, 90, 10], 
-    [205, 150, 90, 10], 
-    [175, 40, 90, 10]
-    ] 
+    [175, 480, 90, 10],
+    [60, 400, 90, 10],
+    [220, 330, 90, 10],
+    [100, 260, 90, 10],
+    [190, 190, 90, 10],
+    [40, 120, 90, 10],
+    [230, 50, 90, 10]
+]
 
 jump = False
 y_change = 0
@@ -111,6 +111,10 @@ celebrate_img = pygame.transform.scale(celebrate_img, (width, height))
 celebrate_index = 0
 celebrate_timer = pygame.time.get_ticks()
 celebrate_interval = 500
+celebrate_flip_timer = pygame.time.get_ticks()
+celebrate_flip_interval = 1000
+celebrate_facing_left = False
+
 
 celebrate_platform_img = pygame.transform.scale(pygame.image.load('celebrationplatform.png').convert_alpha(), (100, 20))
 celebrate_platform_rect = pygame.Rect(width//2 - 50, 300, 100, 20)
@@ -127,10 +131,22 @@ def celebrate():
     screen.blit(celebrate_frames[celebrate_index], (0, 0))
     screen.blit(celebrate_platform_img, (celebrate_platform_rect.x, celebrate_platform_rect.y))
     
-    if is_grounded:
-        animation_tracker += animation_increment
-        animation_index = int(animation_tracker) % len(idle_frames)
-        player = idle_frames[animation_index]
+    animation_tracker += animation_increment
+    animation_index = int(animation_tracker) % len(idle_frames)
+    player = idle_frames[animation_index]
+
+    global celebrate_facing_left, celebrate_flip_timer
+    now = pygame.time.get_ticks()
+    if now - celebrate_flip_timer >= celebrate_flip_interval:
+        celebrate_facing_left = not celebrate_facing_left
+        celebrate_flip_timer = now
+
+    if celebrate_facing_left:
+        player = pygame.transform.flip(player, True, False)
+
+    player = pygame.transform.scale(player, (90, 70))
+    player_x = celebrate_platform_rect.x + (celebrate_platform_rect.width // 2) - 45
+    player_y = celebrate_platform_rect.y - 70
     screen.blit(player, (player_x, player_y))
     screen.blit(text_above, (width//2 - text_above.get_width()//2, celebrate_platform_rect.y - 70 - 40))
     screen.blit(text_below, (width//2 - text_below.get_width()//2, celebrate_platform_rect.y + 20 + 10))
@@ -299,6 +315,8 @@ running = True
 while running == True:
     timer.tick(fps)
     if celebrating:
+        x_change = 0
+        y_change = 0
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
