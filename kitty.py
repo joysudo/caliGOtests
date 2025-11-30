@@ -447,8 +447,13 @@ while running == True:
 
     for coin in coins_list:
         screen.blit(coin_img, (coin.x, coin.y))
+        if player_y < 250 and y_change < 0:
+            coin.y += -y_change
+        if coin.y > height:
+            coins_list.remove(coin)
+
     if len(coins_list) < 1:
-        coins_list.append(pygame.Rect(random.randint(50, width-50), random.randint(50, height-100), coin_width, coin_height))
+        coins_list.append(pygame.Rect(random.randint(50, width-50), random.randint(0,height//4), coin_width, coin_height))
 
     bird_x += bird_speed
     bird_rect.x = bird_x
@@ -482,7 +487,7 @@ while running == True:
         y_change = 0
     if score > high_score:
         high_score = score
-    if score > 20 and not celebrating:
+    if score > 200 and not celebrating:
         celebrating = True
         player_y = celebrate_platform_rect.y - 70
 
