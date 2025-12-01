@@ -12,8 +12,6 @@ pygame.mixer.music.play(-1)
 white = (255, 255, 255)
 black = (0, 0, 0)
 gray = (128, 128, 128)
-red = (255, 0, 0)
-blue = (0, 0, 255)
 width = 600
 height = 500
 background = white
@@ -85,8 +83,8 @@ for coin in coins_list:
 
 #platforms
 platform_img = pygame.image.load('platform_1.png').convert_alpha()
-platform_width = 90
-platform_height = 10
+platform_width = 100  
+platform_height = 45
 platform_img = pygame.transform.scale(platform_img, (platform_width, platform_height))
 
 #meow
@@ -104,6 +102,7 @@ platforms = [
     [40, 120, 90, 10],
     [230, 50, 90, 10]
 ]
+
 jump = False
 y_change = 0
 x_change = 0
@@ -227,11 +226,13 @@ def restart():
                 pygame.quit()
                 quit()
             if e.type == pygame.KEYDOWN and e.key == pygame.K_RETURN:
-                waiting = False
+                waiting = False 
+
 
 
 #font
 font = pygame.font.SysFont(None, 30)
+
 #update y coordinate of player 
 def update_player(y_pos):
     global jump
@@ -239,11 +240,10 @@ def update_player(y_pos):
     jump_height = 15
     gravity = 1
     if jump == True:
-        y_change = -jump_height
+        y_change = -jump_height #negative y_change is positive jump
         jump = False
     y_pos += y_change
-    if is_grounded == False:
-        y_change += gravity
+    y_change += gravity
     return y_pos
 
 player_y = update_player(player_y)
@@ -253,10 +253,7 @@ player_y = update_player(player_y)
 def check_collisions(rect_list):
     global player_x, player_y, y_change, is_grounded
     is_grounded = False
-    # formerly:     player_rect = pygame.Rect(player_x, player_y + 60, 90, 10)  #bottom of player
-    player_rect = pygame.Rect(player_x + 20, player_y + 50, 50, 20)  #bottom of player
-    # y-height: starts at 60th pixel and ends at  70th pixel (total cat height is 70)
-    # pygame.draw.rect(screen, red, player_rect, 1)
+    player_rect = pygame.Rect(player_x + 20, player_y + 50, 50, 20)
 
     for block in rect_list:
         if block.colliderect(player_rect) and y_change >= 0:
@@ -283,11 +280,11 @@ def update_platforms(my_list, y_pos, change):
     for item in range(len(my_list)):
         if my_list[item][1] > height:
             while True:
-                new_x = random.randint(10, width - platform_width)
+                new_x = random.randint(10, width - 80)
                 if abs(new_x - player_x) >= min_distance and abs(new_x - player_x) <= max_distance:
                     break
             new_y = random.randint(-50, -10)
-            my_list[item] = [new_x, new_y, platform_width, platform_height]
+            my_list[item] = [new_x, new_y, 70, 10]
             score += 1
 
     return my_list
@@ -403,7 +400,6 @@ while running == True:
 
     blocks = []
     for p in platforms:
-        # pygame.draw.rect(screen, blue, (p[0], p[1], platform_width, platform_height))
         screen.blit(platform_img, (p[0], p[1]))
         blocks.append(pygame.Rect(p[0], p[1], platform_width, platform_height))
 
@@ -433,6 +429,7 @@ while running == True:
                             waiting = False  
             if event.key == pygame.K_RETURN and game_over:
                 restart()
+                
 
         elif event.type == pygame.KEYUP:
             if event.key == pygame.K_RIGHT:
@@ -494,27 +491,6 @@ while running == True:
         celebrating = True
         player_y = celebrate_platform_rect.y - 70
 
-
-    if is_grounded == True:
-        animation_tracker = animation_tracker + animation_increment 
-        if animation_tracker >= len(idle_frames):
-            animation_tracker = 0.0
-        player = idle_frames[int(animation_tracker)]
-    elif is_grounded == False:
-        if y_change < -6:
-            player = jump_frames[0] 
-        if y_change > -6 and y_change < 0:
-            player = jump_frames[1]
-        if y_change > 0 and y_change < 6: 
-            player = jump_frames[2]
-        if y_change > 6:
-            player = jump_frames[3]
-
-    player = pygame.transform.scale(player, (90, 70))
-    if facing_left:
-        player = pygame.transform.flip(player, True, False)
-
-    screen.blit(player, (player_x, player_y))
 
     if game_over == True:
         show_game_over_screen(score, high_score)
