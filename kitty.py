@@ -22,12 +22,21 @@ screen = pygame.display.set_mode([width, height])
 pygame.display.set_caption('caliGO')
 #more constants
 player = pygame.transform.scale(pygame.image.load ('kitty.png'), (90, 70))
+calico_cat = pygame.transform.scale(
+    pygame.image.load("calico.png").convert_alpha(), (90, 70)
+)
+gray_cat = pygame.transform.scale(
+    pygame.image.load("kitty.png").convert_alpha(), (90, 70)
+)
 fps = 60
 timer = pygame.time.Clock()
 score = 0
 game_over = False
 celebrating = False
 coins = 0
+selected_skin = "default"
+skin_unlocked = False
+calico_skin = pygame.transform.scale(pygame.image.load ('calicoskin.png'), (90, 70))
 
 
 
@@ -165,6 +174,7 @@ def celebrate():
     screen.blit(text_above, (width//2 - text_above.get_width()//2, celebrate_platform_rect.y - 70 - 40))
     screen.blit(text_below, (width//2 - text_below.get_width()//2, celebrate_platform_rect.y + 20 + 10))
 
+
 #animation variables
 animation_tracker = 0.0
 animation_increment = 0.1
@@ -193,6 +203,11 @@ idle_frames = get_frames(idle_sheet, 3)
 jump_sheet = pygame.image.load('jump.png').convert_alpha()
 jump_frames = get_frames(jump_sheet, 4)
 
+alt_idle_sheet = pygame.image.load('calicoidle.png').convert_alpha()
+alt_idle_frames = get_frames(alt_idle_sheet, 3)
+
+alt_jump_sheet = pygame.image.load('calicojump.png').convert_alpha()
+alt_jump_frames = get_frames(alt_jump_sheet, 4)
 
 #restart
 def restart():
@@ -296,10 +311,15 @@ def update_platforms(my_list, y_pos, change):
 def show_start_screen():
     screen.fill(white)
     title = font.render("caliGO", True, black)
-    start_text = font.render("the kitty has probably forgiven you by now, press enter", True, black)
+    start_text = font.render("play (press enter)", True, black)
+    options_text = font.render("options (press 1)", True, black)
+    shop_text = font.render("shop (press 2)", True, black)
     
-    screen.blit(title, (width//2 - title.get_width()//2, 150))
-    screen.blit(start_text, (width//2 - start_text.get_width()//2, 250))
+    
+    screen.blit(title, (width//2 - title.get_width()//2, 100))
+    screen.blit(start_text, (width//2 - start_text.get_width()//2, 200))
+    screen.blit(options_text, (width//2 - options_text.get_width()//2, 300))
+    screen.blit(shop_text, (width//2 - shop_text.get_width()//2, 400))
 
     pygame.display.flip()
 
@@ -313,138 +333,174 @@ def show_game_over_screen(score, high_score):
     screen.blit(over, (width//2 - over.get_width()//2, 150))
     screen.blit(score_text, (width//2 - score_text.get_width()//2, 200))
 
+#shop
+def show_shop_screen():
+    global player, coins, skin_unlocked
+    shop_open = True
+    selected_item = 0
 
-running = True
-while running == True:
-    timer.tick(fps)
-    if celebrating:
-        x_change = 0
-        y_change = 0
+    shop_items = [
+        {"name": "Calico Cat", "cost": 5, "image": calico_cat},
+        {"name": "Gray Cat",   "cost": 8, "image": gray_cat},
+    ]
+
+    while shop_open:
+        screen.fill(white)
+
+        # Draw text
+        title = font.render("WELCOME TO THE SHOP!!", True, black)
+        screen.blit(title, (width//2 - title.get_width()//2, 50))
+        
+        y = 150
+        for i, item in enumerate(shop_items):
+            color = (0, 0, 255) if i == selected_item else black
+            text = font.render(f"{item['name']} - {item['cost']} coins", True, color)
+            screen.blit(text, (100, y))
+            y += 50
+
+        # Preview selected item
+        screen.blit(shop_items[selected_item]["image"], (450, 150))
+        screen.blit(font.render("Press B to buy", True, black), (width//2 - 60, 300))
+        screen.blit(font.render("Press ESC to exit", True, black), (width//2 - 70, 350))
+        
+        pygame.display.flip()
+
+        # Event handling
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                running = False
-
-        celebrate()
-        pygame.display.flip()
-        continue
-
-    screen.blit(backgrounds[current_background], (0, 0))
-    if score > 10 and score < 20:
-        current_background = 1
-    if score > 20 and score < 30:
-        current_background = 2
-    if score > 30 and score < 40:
-        current_background = 3
-    if score > 50 and score < 60:
-        current_background = 4
-    if score > 60 and score < 70:
-        current_background = 5
-    if score > 70 and score < 80:
-        current_background = 6
-    if score > 80 and score < 90:
-        current_background = 7
-    if score > 90 and score < 100:
-        current_background = 8
-    if score > 100 and score < 110:
-        current_background = 9
-    if score > 110 and score < 120:
-        current_background = 10
-    if score > 120 and score < 130:
-        current_background = 11
-    if score > 130 and score < 140:
-        current_background = 12
-    if score > 140 and score < 150:
-        current_background = 13
-    if score > 150 and score < 160:
-        current_background = 14
-    if score > 160 and score < 170:
-        current_background = 15
-    if score > 170 and score < 180:
-        current_background = 16
-    if score > 180 and score < 190:
-        current_background = 17
-    if score > 190 and score < 200:
-        current_background = 18
-
-    #animation system
-    if is_grounded:
-        animation_tracker += animation_increment
-        if animation_tracker >= len(idle_frames):
-            animation_tracker = 0.0
-        player = idle_frames[int(animation_tracker)]
-    else:
-        if y_change < -6:
-            player = jump_frames[0]
-        elif -6 <= y_change < 0:
-            player = jump_frames[1]
-        elif 0 <= y_change < 6:
-            player = jump_frames[2]
-        else:
-            player = jump_frames[3]
-
-#scale + flip
-
-    score_text = font.render('score: ' + str(score), True, black, background)
-    screen.blit(score_text, (400, 50))
-    high_score_text = font.render('high score: ' + str(high_score), True, black, background)
-    screen.blit(high_score_text, (400, 20))
-    coin_text = font.render('coins: ' + str(coins), True, black, background)
-    screen.blit(coin_text, (400, 80))
+                pygame.quit()
+                quit()
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    shop_open = False
+                elif event.key == pygame.K_UP:
+                    selected_item = (selected_item - 1) % len(shop_items)
+                elif event.key == pygame.K_DOWN:
+                    selected_item = (selected_item + 1) % len(shop_items)
+                elif event.key == pygame.K_b:
+                    item = shop_items[selected_item]
+                    if coins >= item["cost"]:
+                        coins -= item["cost"]
+                        player = item["image"]
+                        if item["name"] == "Calico Cat":
+                            skin_unlocked = True
+                        elif item["name"] == "Gray Cat":
+                            skin_unlocked = False
 
 
-    player = pygame.transform.scale(player, (90, 70))
-    if facing_left:
-        player = pygame.transform.flip(player, True, False)
-
-    screen.blit(player, (player_x, player_y))
 
 
-    blocks = []
-    for p in platforms:
-        screen.blit(platform_img, (p[0], p[1]))
-        blocks.append(pygame.Rect(p[0], p[1], platform_width, platform_height))
+
+
+running = True
+while running:
+    timer.tick(fps)
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-        elif event.type == pygame.KEYDOWN: #check when up arrow pressed
-            if event.key == pygame.K_UP and is_grounded:
+
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                running = False
+            elif event.key == pygame.K_UP and is_grounded:
                 jump = True
                 jump_sound.play()
-            if event.key == pygame.K_RIGHT:
+            elif event.key == pygame.K_RIGHT:
                 x_change = player_speed
                 facing_left = False
-            if event.key == pygame.K_LEFT:
+            elif event.key == pygame.K_LEFT:
                 x_change = -player_speed
                 facing_left = True
-            if event.key == pygame.K_SPACE:
-               show_start_screen()
-
-               waiting = True
-               while waiting:
-                  for e in pygame.event.get():
-                     if e.type == pygame.QUIT:
-                            pygame.quit()
-                            quit()
-                     if e.type == pygame.KEYDOWN and e.key == pygame.K_SPACE:
-                            waiting = False  
-            if event.key == pygame.K_RETURN and game_over:
+            elif event.key == pygame.K_SPACE:
+                show_start_screen()
+            elif event.key == pygame.K_2:
+                show_shop_screen()
+            elif event.key == pygame.K_RETURN and game_over:
                 restart()
-                
 
         elif event.type == pygame.KEYUP:
-            if event.key == pygame.K_RIGHT:
-                x_change = 0
-            if event.key == pygame.K_LEFT:
+            if event.key == pygame.K_RIGHT or event.key == pygame.K_LEFT:
                 x_change = 0
 
-    player_rect = pygame.Rect(player_x, player_y, 90, 70)
-    if player_rect.colliderect(bird_rect):
+    if celebrating:
+        x_change = 0
+        y_change = 0
+        celebrate()
+        pygame.display.flip()
+        continue
+
+    player_y = update_player(player_y)
+    player_x += x_change
+
+    blocks = [pygame.Rect(p[0], p[1], platform_width, platform_height) for p in platforms]
+    check_collisions(blocks)
+
+    if player_y < 488:
+        platforms = update_platforms(platforms, player_y, y_change)
+    else:
         game_over = True
+        y_change = 0
+
+    if score > high_score:
+        high_score = score
+    if score > 200 and not celebrating:
+        celebrating = True
+        player_y = celebrate_platform_rect.y - 70
+
+    screen.blit(backgrounds[current_background], (0, 0))
+
+    #player animation
+    if skin_unlocked:
+        idle = alt_idle_frames
+        jump_anim = alt_jump_frames
+    else:
+        idle = idle_frames
+        jump_anim = jump_frames
+
+    if is_grounded:
+        player = idle[int(animation_tracker) % len(idle)]
+    else:
+        if y_change < -6:
+            player = jump_anim[0]
+        elif -6 <= y_change < 0:
+            player = jump_anim[1]
+        elif 0 <= y_change < 6:
+            player = jump_anim[2]
+        else:
+            player = jump_anim[3]
+
+    player_scaled = pygame.transform.scale(player, (90, 70))
+    if facing_left:
+        player_scaled = pygame.transform.flip(player_scaled, True, False)
+    screen.blit(player_scaled, (player_x, player_y))
+
+    #platforms
+    for p in platforms:
+        screen.blit(platform_img, (p[0], p[1]))
+
+    #birb
+    bird_x += bird_speed
+    bird_rect.x = bird_x
+    if bird_x <= 0 or bird_x + bird_width >= width:
+        bird_speed *= -1
+    current_time = pygame.time.get_ticks()
+    if current_time - last_bird_swap >= bird_swap_interval:
+        bird_img = bird_img2 if bird_img == bird_img1 else bird_img1
+        last_bird_swap = current_time
+
+    screen.blit(bird_img if bird_speed > 0 else pygame.transform.flip(bird_img, True, False), (bird_x, bird_y))
+
+    #coins
+    player_rect = pygame.Rect(player_x, player_y, 90, 70)
     for coin in coins_list[:]:
         if player_rect.colliderect(coin):
             coins += 1
             coins_list.remove(coin)
+    bird_rect = pygame.Rect(bird_x, bird_y, bird_width, bird_height)
+    if player_rect.colliderect(bird_rect):
+        game_over = True
+        y_change = 0
 
     for coin in coins_list:
         screen.blit(coin_img, (coin.x, coin.y))
@@ -452,48 +508,19 @@ while running == True:
             coin.y += -y_change
         if coin.y > height:
             coins_list.remove(coin)
-
     if len(coins_list) < 1:
         coins_list.append(pygame.Rect(random.randint(50, width-50), random.randint(0,height//4), coin_width, coin_height))
 
-    bird_x += bird_speed
-    bird_rect.x = bird_x
-    if bird_x <= 0 or bird_x + bird_width >= width:
-        bird_speed *= -1
-
-    current_time = pygame.time.get_ticks()
-    if current_time - last_bird_swap >= bird_swap_interval:
-        if bird_img == bird_img1:
-            bird_img = bird_img2
-        else:
-            bird_img = bird_img1
-        last_bird_swap = current_time
-
-    if bird_speed < 0:
-        screen.blit(pygame.transform.flip(bird_img, True, False), (bird_x, bird_y))
-    else:
-        screen.blit(bird_img, (bird_x, bird_y))
-
-
-    player_y = update_player(player_y)
-    check_collisions(blocks)
-    player_x += x_change 
-    check_collisions(blocks)
-    current_time = pygame.time.get_ticks()
-
-    if player_y < 488:
-        platforms = update_platforms(platforms, player_y, y_change)
-    else:
-        game_over = True
-        y_change = 0
-    if score > high_score:
-        high_score = score
-    if score > 20 and not celebrating:
-        celebrating = True
-        player_y = celebrate_platform_rect.y - 70
-
-
-    if game_over == True:
+    score_text = font.render(f'Score: {score}', True, black)
+    high_score_text = font.render(f'High Score: {high_score}', True, black)
+    coin_text = font.render(f'Coins: {coins}', True, black)
+    screen.blit(score_text, (400, 50))
+    screen.blit(high_score_text, (400, 20))
+    screen.blit(coin_text, (400, 80))
+    
+    if game_over:
         show_game_over_screen(score, high_score)
+
     pygame.display.flip()
+
 pygame.quit()
