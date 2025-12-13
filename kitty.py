@@ -20,7 +20,9 @@ font = pygame.font.Font("Silkscreen-Regular.ttf", 16)
 #screen
 screen = pygame.display.set_mode([width, height])
 pygame.display.set_caption('caliGO')
-#more constants
+
+# bro COMMENT UR CODE BETTER
+# shop images
 player = pygame.transform.scale(pygame.image.load ('kitty.png'), (90, 70))
 calico_cat = pygame.transform.scale(
     pygame.image.load("calico.png").convert_alpha(), (90, 70)
@@ -28,14 +30,21 @@ calico_cat = pygame.transform.scale(
 gray_cat = pygame.transform.scale(
     pygame.image.load("kitty.png").convert_alpha(), (90, 70)
 )
+blue_cat = pygame.transform.scale(
+    pygame.image.load("blue.png").convert_alpha(), (90, 70)
+)
+
+
 fps = 60
 timer = pygame.time.Clock()
 score = 0
 game_over = False
 celebrating = False
 coins = 0
+# bro. before u initialized this "selected_skin" variable and didn't even use it. doofus
 selected_skin = "default"
-skin_unlocked = False
+# this is so much better than having "skin_unlocked" as a boolean. if it's a boolean, you only have two options (yes/no). 
+# and what does "yes" even mean? does "yes" mean the calico is unlocked? does "yes" mean the glorp is unlocked?
 calico_skin = pygame.transform.scale(pygame.image.load ('calicoskin.png'), (90, 70))
 
 
@@ -155,8 +164,8 @@ def celebrate():
     screen.blit(celebrate_platform_img, (celebrate_platform_rect.x, celebrate_platform_rect.y))
     
     animation_tracker += animation_increment
-    animation_index = int(animation_tracker) % len(idle_frames)
-    player = idle_frames[animation_index]
+    animation_index = int(animation_tracker) % 3
+    player = idle[animation_index]
 
     global celebrate_facing_left, celebrate_flip_timer
     now = pygame.time.get_ticks()
@@ -197,17 +206,14 @@ def get_frames(sheet, count):
         frame_list.append(frame)
     return frame_list
 
-idle_sheet = pygame.image.load('idle.png').convert_alpha()
-idle_frames = get_frames(idle_sheet, 3)
+gray_idle_frames = get_frames(pygame.image.load('idle.png').convert_alpha(), 3)
+gray_jump_frames = get_frames(pygame.image.load('jump.png').convert_alpha(), 4)
 
-jump_sheet = pygame.image.load('jump.png').convert_alpha()
-jump_frames = get_frames(jump_sheet, 4)
+calico_idle_frames = get_frames(pygame.image.load('calicoidle.png').convert_alpha(), 3)
+calico_jump_frames = get_frames(pygame.image.load('calicojump.png').convert_alpha(), 4)
 
-alt_idle_sheet = pygame.image.load('calicoidle.png').convert_alpha()
-alt_idle_frames = get_frames(alt_idle_sheet, 3)
-
-alt_jump_sheet = pygame.image.load('calicojump.png').convert_alpha()
-alt_jump_frames = get_frames(alt_jump_sheet, 4)
+blue_idle_frames = get_frames(pygame.image.load('blueidle.png').convert_alpha(), 3)
+blue_jump_frames = get_frames(pygame.image.load('bluejump.png').convert_alpha(), 4)
 
 #restart
 def restart():
@@ -335,13 +341,13 @@ def show_game_over_screen(score, high_score):
 
 #shop
 def show_shop_screen():
-    global player, coins, skin_unlocked
+    global player, coins, selected_item, selected_skin
     shop_open = True
     selected_item = 0
 
     shop_items = [
         {"name": "Calico Cat", "cost": 5, "image": calico_cat},
-        {"name": "Gray Cat",   "cost": 8, "image": gray_cat},
+        {"name": "Blue Cat",   "cost": 8, "image": blue_cat},
     ]
 
     while shop_open:
@@ -383,9 +389,9 @@ def show_shop_screen():
                         coins -= item["cost"]
                         player = item["image"]
                         if item["name"] == "Calico Cat":
-                            skin_unlocked = True
-                        elif item["name"] == "Gray Cat":
-                            skin_unlocked = False
+                            selected_skin = "calico"
+                        elif item["name"] == "Blue Cat":
+                            selected_skin = "blue"
 
 
 
@@ -451,12 +457,15 @@ while running:
     screen.blit(backgrounds[current_background], (0, 0))
 
     #player animation
-    if skin_unlocked:
-        idle = alt_idle_frames
-        jump_anim = alt_jump_frames
+    if selected_skin == "calico":
+        idle = calico_idle_frames
+        jump_anim = calico_jump_frames
+    elif selected_skin == "blue":
+        idle = blue_idle_frames
+        jump_anim = blue_jump_frames
     else:
-        idle = idle_frames
-        jump_anim = jump_frames
+        idle = gray_idle_frames
+        jump_anim = gray_jump_frames
 
     if is_grounded:
         player = idle[int(animation_tracker) % len(idle)]
