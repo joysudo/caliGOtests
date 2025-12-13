@@ -56,6 +56,7 @@ backgrounds = [
     pygame.transform.scale(pygame.image.load("background.png"), (width, height)),
     pygame.transform.scale(pygame.image.load("background1.png"), (width, height)),
     pygame.transform.scale(pygame.image.load("background2.png"), (width, height)),
+
     pygame.transform.scale(pygame.image.load("background3.png"), (width, height)),
     pygame.transform.scale(pygame.image.load("background4.png"), (width, height)),
     pygame.transform.scale(pygame.image.load("background5.png"), (width, height)),
@@ -387,7 +388,6 @@ def show_shop_screen():
                     item = shop_items[selected_item]
                     if coins >= item["cost"]:
                         coins -= item["cost"]
-                        player = item["image"]
                         if item["name"] == "Calico Cat":
                             selected_skin = "calico"
                         elif item["name"] == "Blue Cat":
@@ -455,6 +455,7 @@ while running:
         player_y = celebrate_platform_rect.y - 70
 
     screen.blit(backgrounds[current_background], (0, 0))
+    animation_tracker += animation_increment
 
     #player animation
     if selected_skin == "calico":
